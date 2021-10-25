@@ -10,7 +10,8 @@ Enum style access to environment variables with type annotations
 Define your environment variables as class attributes with type annotation:
 
 ```python
-from src.python_env_vars import environment_variables
+from src.environment_variables import environment_variables
+
 
 @environment_variables
 class Environment:
@@ -27,7 +28,8 @@ value will be used instead.
 The `environment_variables` function has several arguments:
 
 ```python
-from src.python_env_vars import environment_variables
+from src.environment_variables import environment_variables
+
 
 @environment_variables(validate=True, prefixes=['FLASK_APP', 'ZSH'])
 class Environment:

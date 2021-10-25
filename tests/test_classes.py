@@ -1,6 +1,6 @@
 import pytest
 
-from src.python_env_vars import EnvVarMeta, EnvVars, environment_variables
+from src.environment_variables import EnvVarMeta, EnvVars, environment_variables
 
 
 class EnvironmentWithMeta(metaclass=EnvVarMeta):

@@ -1,6 +1,6 @@
 import pytest
 
-from src.python_env_vars import environment_variables
+from src.environment_variables import environment_variables
 
 
 @environment_variables

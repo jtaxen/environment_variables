@@ -2,7 +2,7 @@ import itertools
 
 import pytest
 
-from src.python_env_vars import Variable
+from src.environment_variables import Variable
 
 
 def test_variable_without_default_returns_value(environment_variables):
