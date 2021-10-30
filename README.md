@@ -10,7 +10,7 @@ Enum style access to environment variables with type annotations
 Define your environment variables as class attributes with type annotation:
 
 ```python
-from src.environment_variables import environment_variables
+from environment_variables import environment_variables
 
 
 @environment_variables
@@ -28,7 +28,7 @@ value will be used instead.
 The `environment_variables` function has several arguments:
 
 ```python
-from src.environment_variables import environment_variables
+from environment_variables import environment_variables
 
 
 @environment_variables(validate=True, prefixes=['FLASK_APP', 'ZSH'])
@@ -56,10 +56,30 @@ add them as attributes to the class. You can then use them like
 'tmux'
 ```
 
+It is also possible to annotate a class attribute with any class
+using the `variables` function:
+
+```python
+from environment_variables import environment_variables, variable
+
+
+@environment_variables
+class Environment:
+    MY_VARIABLE: CustomClass = variable(
+        CustomClass,
+        'argument',
+        keyword='other_arguent'
+    )
+```
+
+The environment variable is then used as the first argument to the class
+constructor, followed by any args and kwargs passed to the variable
+function.
+
 
 ## The problem this is trying to solve
 
-When configuring a python program with environment variables, one would 
+When configuring a python program with environment variables, one would
 typically access them in a fashion similar to this:
 
 ```python
@@ -70,7 +90,7 @@ my_value = os.getenv('MY_VALUE', default=123)
 
 This leaves a lot of strings lying around in the code, and it gets hard
 to keep track on which values are being used and what variables are needed
-to be set when. A better approach would be to collect everything in a 
+to be set when. A better approach would be to collect everything in a
 config file:
 
 ```python
@@ -83,7 +103,7 @@ class MyConfig:
 ```
 
 This makes it slightly easier to keep track of, but we are still using
-strings that we have to keep track of. An even better approach would 
+strings that we have to keep track of. An even better approach would
 be to use Enums:
 
 ```python
@@ -100,9 +120,9 @@ class MyConfig:
 ```
 
 Much better, now we can just look at the enum to see what variables we have,
-but there is a lot of boilerplate code. For instance, do we really have to 
-write out 'MY_VALUE' twice in the enum definition? It would be much more 
-convenient to have the 'MyVaribles' class understand that the attribute name 
+but there is a lot of boilerplate code. For instance, do we really have to
+write out 'MY_VALUE' twice in the enum definition? It would be much more
+convenient to have the 'MyVaribles' class understand that the attribute name
 should be the environment variable to look for, instead of having to specify
 the string name of the variable again.
 
@@ -110,18 +130,3 @@ On top of that, `os.getenv` always returns strings, so we would have to
 take care of the type casting ourselves if we want to have server ports
 as integers or feature flags as booleans.
 
-## TODO:
-
-1) Type casting when using prefixes
-2) Predefined class for __just__ using prefixes
-3) Better names for classes and packages
-4) Add prefixes like
-
-```python
-@environment_variables(prefix='ARST')
-class ArstEnv:
-    STRING: str  # -> get ARST_STRING
-    INT: int  # -> ARST_STRING
-```
-
-5) setup.py and stuff
