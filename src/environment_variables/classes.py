@@ -1,6 +1,6 @@
 import os
 
-from .variables import Variable
+from .variables import Variable, _VariableTemplate
 
 
 def validate_environment_variables(cls):
@@ -28,20 +28,19 @@ def validate_environment_variables(cls):
     if message:
         raise ValueError(message)
 
+
 def add_variables_by_prefix(cls, prefix):
     variables = {
         key: value for key, value in os.environ.items() if key.startswith(prefix)
     }
     for key, value in variables.items():
         if not hasattr(cls, key):
-            setattr(cls, key, Variable(key=key, type=str))
-
-
+            setattr(cls, key, Variable(key=key, type_=str))
 
 
 class EnvVarMeta(type):
-    """Metaclass for creating EnvVars classes.
-    """
+    """Metaclass for creating EnvVars classes."""
+
     def __new__(mcs, name, bases, dictionary):
         """When creating a new EnvVars class, capture the
         set attributes of the class and add entries in the
@@ -56,14 +55,13 @@ class EnvVarMeta(type):
         # anny fields there that need to be captured. These
         # attributes will only have a name and a type annotation
         for key, value in dictionary.get('__annotations__', {}).items():
-            variables[key] = Variable(key=key, type=value)
+            variables[key] = Variable(key=key, type_=value)
 
         # Look in the dictionary for all attributes that have
         # do not start with __. These attributes will contain
         # defaults if they exist.
         variables_with_default = {
-            key: value for key, value in dictionary.items()
-            if not key.startswith('__')
+            key: value for key, value in dictionary.items() if not key.startswith('__')
         }
 
         # Update the captured variables with their default
@@ -71,10 +69,9 @@ class EnvVarMeta(type):
         # type.
         variables = {
             key: Variable(
-                key=key,
-                type=value.type,
-                default=variables_with_default.pop(key, None)
-            ) for key, value in variables.items()
+                key=key, type_=value.type, default=variables_with_default.pop(key, None)
+            )
+            for key, value in variables.items()
         }
 
         # If any variables are left, add them as well, and
@@ -83,9 +80,12 @@ class EnvVarMeta(type):
             {
                 key: Variable(
                     key=key,
-                    type=type(value),
+                    type_=value.class_or_type
+                    if isinstance(value, _VariableTemplate)
+                    else type(value),
                     default=value,
-                ) for key, value in variables_with_default.items()
+                )
+                for key, value in variables_with_default.items()
             }
         )
 
@@ -112,7 +112,7 @@ class EnvVars(metaclass=EnvVarMeta):
     pass
 
 
-def environment_variables(cls=None, /, *, validate=False, prefixes=[]):
+def environment_variables(cls=None, /, *, validate=False, prefixes=None):
     """
     :param cls: Class to cast to EnvVars class
     :param validate: if True, run through all environment variables
@@ -120,15 +120,18 @@ def environment_variables(cls=None, /, *, validate=False, prefixes=[]):
     :param prefixes: if a list of prefixes is provided, the class
     will automatically add environment variables with those prefixes
     """
+    if prefixes is None:
+        prefixes = []
+
     def wrap(old_cls):
         name = str(old_cls.__name__)
         bases = tuple(old_cls.__bases__)
         class_dict = dict(old_cls.__dict__)
 
         new_cls = EnvVarMeta(name, bases, class_dict)
-        if prefixes:
-            for prefix in prefixes:
-                new_cls.add_variables_by_prefix(prefix)
+
+        for prefix in prefixes:
+            new_cls.add_variables_by_prefix(prefix)
 
         if validate:
             new_cls.validate()

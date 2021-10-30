@@ -45,12 +45,14 @@ class EnvironmentWithDecoratorAndParenthesis:
     INTEGER_VALUE: int
 
 
-@pytest.fixture(params=[
-    EnvironmentWithMeta,
-    EnvironmentWithInheritance,
-    EnvironmentWithDecorator,
-    EnvironmentWithDecoratorAndParenthesis
-])
+@pytest.fixture(
+    params=[
+        EnvironmentWithMeta,
+        EnvironmentWithInheritance,
+        EnvironmentWithDecorator,
+        EnvironmentWithDecoratorAndParenthesis,
+    ]
+)
 def env_class(request):
     return request.param
 

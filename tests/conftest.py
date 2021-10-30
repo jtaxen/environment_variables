@@ -18,6 +18,9 @@ def environment_variables():
         'DEFINED_STRING_VALUE': 'STRING_VALUE',
         'DEFINED_FLOAT_VALUE': '10.001',
         'DEFINED_INTEGER_VALUE': '19',
+        'PATH_TO_FILE': '/path/to/some/file.txt',
+        'PATH_TO_DIR': '/path/to/directory',
+        'URL_STRING': 'http://example.com/',
     }
 
 

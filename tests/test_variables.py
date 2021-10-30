@@ -2,12 +2,12 @@ import itertools
 
 import pytest
 
-from src.environment_variables.variables import Variable
+from src.environment_variables.variables import Variable, _VariableTemplate
 
 
 def test_variable_without_default_returns_value(environment_variables):
     # Given
-    variable = Variable(key='STRING_VALUE', type=str)
+    variable = Variable(key='STRING_VALUE', type_=str)
 
     # When
     value = variable.value
@@ -19,7 +19,7 @@ def test_variable_without_default_returns_value(environment_variables):
 
 def test_variable_with_default_returns_existing_value(environment_variables):
     # Given
-    variable = Variable(key='STRING_VALUE', type=str, default='DEFAULT')
+    variable = Variable(key='STRING_VALUE', type_=str, default='DEFAULT')
 
     # When
     value = variable.value
@@ -31,7 +31,7 @@ def test_variable_with_default_returns_existing_value(environment_variables):
 
 def test_variable_with_default_returns_default_if_env_var_is_undefined():
     # Given
-    variable = Variable(key='DOES_NOT_EXIST', type=str, default='DEFAULT')
+    variable = Variable(key='DOES_NOT_EXIST', type_=str, default='DEFAULT')
 
     # When
     value = variable.value
@@ -43,7 +43,7 @@ def test_variable_with_default_returns_default_if_env_var_is_undefined():
 
 def test_variable_without_default_raises_error_if_env_var_is_undefined():
     # Given
-    variable = Variable(key='DOES_NOT_EXIST', type=str)
+    variable = Variable(key='DOES_NOT_EXIST', type_=str)
 
     # Then
     with pytest.raises(AttributeError):
@@ -53,18 +53,35 @@ def test_variable_without_default_raises_error_if_env_var_is_undefined():
 
 @pytest.mark.parametrize(
     "default,variable_type",
-    list(itertools.product(
-        ['STRING', True, False, 10, 11.01],
-        [str, bool, int, float]
-    ))
+    list(
+        itertools.product(['STRING', True, False, 10, 11.01], [str, bool, int, float])
+    ),
 )
 def test_variable_default_must_match_given_type_annotation(default, variable_type):
     if type(default) == variable_type:
         try:
-            _ = Variable('SOME_KEY', type=variable_type, default=default)
+            _ = Variable('SOME_KEY', type_=variable_type, default=default)
         except ValueError:
             pytest.fail()
 
     else:
         with pytest.raises(ValueError):
-            _ = Variable('SOME_KEY', type=variable_type, default=default)
+            _ = Variable('SOME_KEY', type_=variable_type, default=default)
+
+
+def test_if_attribute_is_defined_as_variable_template_then_variable_type_matches():
+    # Given
+    class SomeClass:
+        pass
+
+    variable_template = _VariableTemplate(
+        class_or_type=SomeClass,
+    )
+
+    variable = Variable(
+        key='key',
+        type_=variable_template,
+    )
+
+    # Then
+    assert SomeClass == variable.type

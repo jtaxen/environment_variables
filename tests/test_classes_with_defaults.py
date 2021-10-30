@@ -67,10 +67,7 @@ def test_defined_int_is_replaced_with_default():
     assert isinstance(EnvironmentWithDefaults.UNDEFINED_INTEGER_VALUE, int)
 
 
-@pytest.mark.parametrize(
-    'default',
-    ['STRING', 10, 10.1, True, False]
-)
+@pytest.mark.parametrize('default', ['STRING', 10, 10.1, True, False])
 def test_default_with_missing_annotation_can_be_inferred(default):
     class WithMissingAnnotation:
         VARIABLE = default

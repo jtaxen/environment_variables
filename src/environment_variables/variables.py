@@ -3,30 +3,58 @@ import os
 import typing
 
 
-@dataclasses.dataclass
-class Variable:
-    """Representation of an environment variable.
-    @param key: Name of the environment variable.
-    @param type: Type to cast the environment variable to
-    after loading its value.
-    @param default: Optional default of the value, if it
-    is not defined on the system. If a default
-    is not set, and the environment variable is
-    not defined on the system, an AttributeError
-    is raised when trying to access the variable.
-    """
-    key: str
-    type: type
-    default: typing.Optional[typing.Any] = None
-    _value: typing.Any = None
+@dataclasses.dataclass(frozen=True)
+class _VariableTemplate:
+    class_or_type: typing.Union[typing.Callable, type]
+    args: tuple = None
+    kwargs: dict = None
 
-    def __post_init__(self):
-        """After initialisation, make sure that the provided
-        default is of the same type as the expected type.
+    def initialize(self, value):
+        return self.class_or_type(value, *self.args, **self.kwargs)
+
+    def __repr__(self):
+        return f"_VariableTemplate({self.class_or_type})"
+
+
+class Variable:
+    def __init__(
+        self,
+        key: str,
+        type_: typing.Union[typing.Type, _VariableTemplate],
+        default: typing.Optional[typing.Any] = None,
+    ):
+        """Representation of an environment variable.
+        @param key: Name of the environment variable.
+        @param type: Type to cast the environment variable to
+        after loading its value.
+        @param default: Optional default of the value, if it
+        is not defined on the system. If a default
+        is not set, and the environment variable is
+        not defined on the system, an AttributeError
+        is raised when trying to access the variable.
         """
-        if self.default is not None and type(self.default) != self.type:
+        self.key = key
+        self._type = type_
+        self.default = default
+        self._value = None
+        self._args = None
+        self._kwargs = None
+
+        if isinstance(self.default, _VariableTemplate):
+            if self._type is not None and self._type != self.default.class_or_type:
+                raise ValueError(
+                    f"The default value '{self.default.class_or_type}' is not of type '"
+                    f"{self._type}'"
+                )
+
+            self._args = self.default.args
+            self._kwargs = self.default.kwargs
+            self._type = self.default.class_or_type
+            self.default = None
+
+        if self.default is not None and type(self.default) != self._type:
             raise ValueError(
-                f"The default value '{self.default}' is not of type '{self.type}'"
+                f"The default value '{self.default}' is not of type '{self._type}'"
             )
 
     @property
@@ -53,7 +81,10 @@ class Variable:
                 "has been provided"
             )
 
-        if self.type == bool:
+        if self._args or self._kwargs:
+            return self.type(raw_value, *self._args, **self._kwargs)
+
+        if self._type == bool:
             # If the raw value is a boolean, that means that
             # the environment variable was not set, and that
             # we fell back on the default value, which already
@@ -79,7 +110,29 @@ class Variable:
         except ValueError as error:
             raise ValueError(
                 f"Error reading environment variable '{self.key}': cannot cast"
-                f"value '{raw_value}' to type '{self.type}'"
+                f"value '{raw_value}' to type '{self._type}'"
             ) from error
 
         return self._value
+
+    @property
+    def type(self):
+        if isinstance(self._type, _VariableTemplate):
+            return self._type.class_or_type
+
+        return self._type
+
+
+def variable(class_or_type, *args, **kwargs):
+    """Create an attribute that is of a class or type that has more
+    arguments than one, and pass the extra arguments to its initializer.
+    The init function of :class_or_type: will be called with the value
+    of the environment variable as the first argument, and then with
+    any additional :args: and :kwargs:
+    :param class_or_type: class or type of this attribute
+    :param args: additional arguments that will be passed directly to
+    the :class_or_type: constructor
+    :param kwargs: additional keyword arguments that wil be passed
+    directly to the constructor
+    """
+    return _VariableTemplate(class_or_type, args, kwargs)
