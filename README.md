@@ -7,6 +7,11 @@ Enum style access to environment variables with type annotations
 ~ Av var och env efter förmåga
   åt var och env efter behov ~
 
+## Requirements
+
+This package supports Python 3.7 or later
+
+
 ## Usage
 
 Define your environment variables as class attributes with type annotation:
