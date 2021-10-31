@@ -9,12 +9,6 @@ class _VariableTemplate:
     args: tuple = None
     kwargs: dict = None
 
-    def initialize(self, value):
-        return self.class_or_type(value, *self.args, **self.kwargs)
-
-    def __repr__(self):
-        return f"_VariableTemplate({self.class_or_type})"
-
 
 class Variable:
     def __init__(
@@ -92,7 +86,7 @@ class Variable:
             if isinstance(raw_value, bool):
                 return raw_value
 
-            if raw_value.isdigit():
+            if raw_value in ['0', '1']:
                 return bool(int(raw_value))
 
             if raw_value.lower() not in ['true', 'false']:

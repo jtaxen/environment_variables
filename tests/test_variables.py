@@ -1,3 +1,4 @@
+import os
 import itertools
 
 import pytest
@@ -85,3 +86,18 @@ def test_if_attribute_is_defined_as_variable_template_then_variable_type_matches
 
     # Then
     assert SomeClass == variable.type
+
+
+@pytest.mark.parametrize(
+    'boolean_representation',
+    ['truth', 'YES', 'falsely', 'NO', '2', '-1', '0.0']
+)
+def test_casting_non_boolean_value_to_boolean_raises_value_error(boolean_representation):
+    # Given
+    os.environ['SOME_KEY'] = boolean_representation
+    variable = Variable('SOME_KEY', type_=bool)
+
+    # Then
+    with pytest.raises(ValueError):
+        # When
+        _ = variable.value
