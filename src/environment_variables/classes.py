@@ -112,7 +112,7 @@ class EnvVars(metaclass=EnvVarMeta):
     pass
 
 
-def environment_variables(cls=None, /, *, validate=False, prefixes=None):
+def environment_variables(cls=None, *, validate=False, prefixes=None):
     """
     :param cls: Class to cast to EnvVars class
     :param validate: if True, run through all environment variables
