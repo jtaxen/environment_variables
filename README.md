@@ -1,6 +1,8 @@
 # Environment variables
 
-![Pytest](https://github.com/jtaxen/environment_variables/actions/workflows/pytest.yml/badge.svg)
+![pytest](https://github.com/jtaxen/environment_variables/actions/workflows/pytest.yml/badge.svg)
+[![pypi](https://img.shields.io/pypi/v/environment_variables.svg)](https://pypi.python.org/project/environment_variables)
+[![license](https://img.shields.io/github/license/jtaxen/environment_variables.svg)](https://github.com/jtaxen/environment_variables/blob/main/LICENSE)
 
 Enum style access to environment variables with type annotations
 
