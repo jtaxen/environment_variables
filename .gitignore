@@ -1,6 +1,8 @@
 .idea/
 .python-version
 dist/
+.coverage
+
 **.egg-info/
 
 **/__pycache__/

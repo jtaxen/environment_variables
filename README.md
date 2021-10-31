@@ -1,5 +1,7 @@
 # Environment variables
 
+![Pytest](https://github.com/jtaxen/environment_variables/actions/workflows/pytest.yml/badge.svg)
+
 Enum style access to environment variables with type annotations
 
 ~ Av var och env efter förmåga
