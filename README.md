@@ -6,7 +6,7 @@
 
 Enum style access to environment variables with type annotations
 
-~ Av vars och env efter förmåga
+~ Av vars och env efter förmåga,
   åt vars och env efter behov ~
 
 ## Requirements
