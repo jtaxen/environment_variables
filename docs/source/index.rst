@@ -6,9 +6,17 @@
 Environment variables
 =================================================
 
+This package lets you define enum-style classes to access your
+environment variables, with type annotation and optional default
+values.
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
+
+   installation
+   usage
+   api-reference
 
 .. automodule:: environment_variables
    :members:

@@ -120,9 +120,11 @@ class Variable:
 def variable(class_or_type, *args, **kwargs):
     """Create an attribute that is of a class or type that has more
     arguments than one, and pass the extra arguments to its initializer.
+
     The init function of :class_or_type: will be called with the value
     of the environment variable as the first argument, and then with
     any additional :args: and :kwargs:
+
     :param class_or_type: class or type of this attribute
     :param args: additional arguments that will be passed directly to
     the :class_or_type: constructor
