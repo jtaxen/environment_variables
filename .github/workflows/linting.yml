@@ -20,5 +20,5 @@ jobs:
         pip install flake8
     - name: Analysing the code with flake8
       run: |
-        flake8 `ls -R|grep .py$|xargs`
-        black -S `ls -R|grep .py$|xargs`
+        flake8 .
+        black -S .
