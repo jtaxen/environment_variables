@@ -26,22 +26,38 @@ class NonPrimitiveAttributes:
 @environment_variables
 class AttributeWithoutDefault:
     STRING_VALUE: CustomFieldsClass = variable(
-        CustomFieldsClass, without_default='no-default'
+        CustomFieldsClass, kwargs={'without_default': 'no-default'}
     )
 
 
 @environment_variables
 class AttributeWithDefault:
     STRING_VALUE: CustomFieldsClass = variable(
-        CustomFieldsClass, without_default='no-default', with_default='not-default'
+        CustomFieldsClass, kwargs={
+            'without_default': 'no-default', 'with_default': 'not-default'
+        }
     )
 
 
 @environment_variables
 class AttributeWithDefaultNoAnnotation:
     STRING_VALUE = variable(
-        CustomFieldsClass, without_default='no-default', with_default='not-default'
+        CustomFieldsClass, kwargs={
+            'without_default':'no-default', 'with_default': 'not-default'
+        }
     )
+
+
+@environment_variables
+class AttributeWithPositionalArgument:
+    STRING_VALUE = variable(
+        CustomFieldsClass,
+        args=('no-default',),
+        kwargs={
+            'with_default': 'not-default'
+        }
+    )
+
 
 
 def test_if_type_is_class_then_variable_is_used_to_init_the_class():
@@ -59,7 +75,12 @@ def test_cast_variable_to_custom_class_without_defaults():
 
 
 @pytest.mark.parametrize(
-    "env_var_class", [AttributeWithDefault, AttributeWithDefaultNoAnnotation]
+    "env_var_class",
+    [
+        AttributeWithDefault,
+        AttributeWithDefaultNoAnnotation,
+        AttributeWithPositionalArgument,
+    ]
 )
 def test_cast_variable_to_custom_class_with_defaults(env_var_class):
     assert isinstance(env_var_class.STRING_VALUE, CustomFieldsClass)
@@ -71,7 +92,9 @@ def test_annotation_must_match_variable_class():
     # Given
     class ConflictingAnnotations:
         STRING_VALUE: BadFieldsClass = variable(
-            CustomFieldsClass, without_default='no-default', with_default='not-default'
+            CustomFieldsClass, kwargs={
+                'without_default': 'no-default', 'with_default': 'not-default'
+            }
         )
 
     # Then

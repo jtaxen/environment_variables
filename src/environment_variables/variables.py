@@ -117,7 +117,7 @@ class Variable:
         return self._type
 
 
-def variable(class_or_type, *args, **kwargs):
+def variable(class_or_type, args=None, kwargs=None):
     """Create an attribute that is of a class or type that has more
     arguments than one, and pass the extra arguments to its initializer.
 
@@ -131,4 +131,7 @@ def variable(class_or_type, *args, **kwargs):
     :param kwargs: additional keyword arguments that wil be passed
     directly to the constructor
     """
+    args = args or tuple()
+    kwargs = kwargs or dict()
+
     return _VariableTemplate(class_or_type, args, kwargs)
