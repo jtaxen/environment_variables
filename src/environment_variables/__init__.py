@@ -1,7 +1,5 @@
-"""This package lets you define enum-style classes to access your
-environment variables, with type annotation and optional default
-values. The most straight-forward way of defining your class is to wrap
-it with the :ref `environment_variable <environment-varables-wrapper>`
+"""The most straight-forward way of defining your class is to wrap
+it with the :ref:`environment_variable <environment-variables-wrapper>`
 function:
 
 .. code-block:: python

@@ -3,11 +3,15 @@ import os
 from .variables import Variable, _VariableTemplate
 
 
-def validate_environment_variables(cls):
-    """Run through all environment variables set in this class
-    and make sure that they all are either defined or have a
-    default set. Also check that the variables are castable
-    to the desired type.
+def _validate_environment_variables(cls):
+    """Run through all environment variables set in this class and make
+    sure that they are all either defined on a system level, or have a
+    default set. Also check that the variables are castable to the
+    desired type.
+
+    :raises EnvironmentValidationError: if any variable fails the
+    validation criteria. The error contains information on all the
+    attributes that have failed the validation
     """
     message = ''
     for name, attribute in cls.__dict__.items():
@@ -29,7 +33,7 @@ def validate_environment_variables(cls):
         raise ValueError(message)
 
 
-def add_variables_by_prefix(cls, prefix):
+def _add_variables_by_prefix(cls, prefix):
     variables = {
         key: value for key, value in os.environ.items() if key.startswith(prefix)
     }
@@ -39,7 +43,10 @@ def add_variables_by_prefix(cls, prefix):
 
 
 class EnvVarMeta(type):
-    """Metaclass for creating EnvVars classes."""
+    """Metaclass for creating EnvVars classes. Environment variable
+    classes can be created by using this metaclass, but the recommended
+    way is to use the `@environment_variables` wrapper.
+    """
 
     def __new__(mcs, name, bases, dictionary):
         """When creating a new EnvVars class, capture the
@@ -92,8 +99,8 @@ class EnvVarMeta(type):
         for key, value in variables.items():
             setattr(cls, key, value)
 
-        setattr(cls, 'validate', classmethod(validate_environment_variables))
-        setattr(cls, 'add_variables_by_prefix', classmethod(add_variables_by_prefix))
+        setattr(cls, 'validate', classmethod(_validate_environment_variables))
+        setattr(cls, 'add_variables_by_prefix', classmethod(_add_variables_by_prefix))
 
         return cls
 
@@ -109,16 +116,40 @@ class EnvVarMeta(type):
 
 
 class EnvVars(metaclass=EnvVarMeta):
-    pass
+    """Base class using the EnvVarMeta metaclass. Subclassing this class
+    is equivalent to wrapping the class with the `environment_variables`
+    function.
+    """
 
 
 def environment_variables(cls=None, *, validate=False, collect_prefixes=None):
-    """
-    :param cls: Class to cast to EnvVars class
+    """Create an EnvVar class from the provided `cls`. This function can
+    be used to wrap a class:
+
+    .. code-block:: python
+
+        @environment_variables
+        class Environment:
+            MY_VARIABLE: str
+
+    or:
+
+    .. code-block:: python
+
+        @environment_variables(validate=True, collect_prefixes=['ZSH'])
+        class Environment:
+            pass
+
+    :param cls: the class definition to use
     :param validate: if True, run through all environment variables
     and raise an error if any variable is not set nor have a default
-    :param collect_prefixes: if a list of prefixes is provided, the class
-    will automatically add environment variables with those prefixes
+    :param collect_prefixes: if a list of prefixes is provided, the
+    class will automatically add environment variables with those
+    prefixes. This might be useful to get a quick access when debugging
+    or experimenting, but it will dynamically add different environment
+    variables depending on how the system is set up, while also
+    obscuring what variables are being used, and is not recommended in
+    a project where code is shared between several developers.
     """
     if collect_prefixes is None:
         collect_prefixes = []
