@@ -70,6 +70,30 @@ class AttributeWithDefaultForEnvVar:
     )
 
 
+def custom_fields_class_factory(argument):
+    return CustomFieldsClass(
+        name='static name',
+        without_default=argument,
+        with_default='default'
+    )
+
+
+@environment_variables
+class DefaultFactoryWithSetVariable:
+    STRING_VALUE = variable(
+        CustomFieldsClass,
+        default_factory=custom_fields_class_factory,
+    )
+
+
+@environment_variables
+class DefaultFactoryWithoutSetVariable:
+    DOES_NOT_EXIST = variable(
+        CustomFieldsClass,
+        default='default',
+        default_factory=custom_fields_class_factory,
+    )
+
 
 def test_if_type_is_class_then_variable_is_used_to_init_the_class():
     assert isinstance(NonPrimitiveAttributes.PATH_TO_FILE, pathlib.Path)
@@ -119,3 +143,17 @@ def test_default_value_is_passed_to_class_constructor():
     assert 'my-default' == AttributeWithDefaultForEnvVar.DOES_NOT_EXIST.name
     assert 'no-default' == AttributeWithDefaultForEnvVar.DOES_NOT_EXIST.without_default
     assert 'not-default' == AttributeWithDefaultForEnvVar.DOES_NOT_EXIST.with_default
+
+
+def test_default_factory_returns_instance_with_environment_argument_if_set():
+    assert isinstance(DefaultFactoryWithSetVariable.STRING_VALUE, CustomFieldsClass)
+    assert 'static name' == DefaultFactoryWithSetVariable.STRING_VALUE.name
+    assert 'string value' == DefaultFactoryWithSetVariable.STRING_VALUE.without_default
+    assert 'default' == DefaultFactoryWithSetVariable.STRING_VALUE.with_default
+
+
+def test_default_factory_uses_default_value_if_environment_variable_is_not_set():
+    assert isinstance(DefaultFactoryWithoutSetVariable.DOES_NOT_EXIST, CustomFieldsClass)
+    assert 'static name' == DefaultFactoryWithoutSetVariable.DOES_NOT_EXIST.name
+    assert 'default' == DefaultFactoryWithoutSetVariable.DOES_NOT_EXIST.without_default
+    assert 'default' == DefaultFactoryWithoutSetVariable.DOES_NOT_EXIST.with_default

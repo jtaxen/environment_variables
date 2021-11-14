@@ -10,7 +10,7 @@ def environment_variables():
         'BOOLEAN_FALSE': 'false',
         'BOOLEAN_TRUE_AS_INT': '1',
         'BOOLEAN_FALSE_AS_INT': '0',
-        'STRING_VALUE': '/path/to/some/place',
+        'STRING_VALUE': 'string value',
         'FLOAT_VALUE': '10.001',
         'INTEGER_VALUE': '19',
         'DEFINED_BOOLEAN_TRUE': 'true',
