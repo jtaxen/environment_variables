@@ -9,10 +9,23 @@ Enum style access to environment variables with type annotations
 ~ Av vars och env efter förmåga,
   åt vars och env efter behov ~
 
+The package is hosted at [PyPI](https://pypi.org/project/environment-variables/)
+
+## Documentation
+
+The documentation can be found on [ReadTheDocs](https://environment-variables.readthedocs.io/en/latest/)
+
 ## Requirements
 
 This package supports Python 3.7 or later
 
+## Installation
+
+Install using ``pip``:
+
+```shell
+$ pip install environment-variables
+```
 
 ## Usage
 
@@ -34,37 +47,6 @@ the system for a environment variable of the same name and return
 its value cast to the annotated type. If it is not defined, the default
 value will be used instead.
 
-The `environment_variables` function has several arguments:
-
-```python
-from environment_variables import environment_variables
-
-
-@environment_variables(validate=True, prefixes=['FLASK_APP', 'ZSH'])
-class Environment:
-    MY_VARIABLE: str
-    MY_INTEGER: int = 10
-    MY_FEATURE_FLAG: bool = False
-```
-
-If `validate` is `True`, a validation will be made when the class is
-loaded, that will check if all the attributes either are defined in
-the environment, or that they have been provided with a default. If
-not, a `ValueError` is raised.
-
-If `prefixes` is provided, the class will search through the environment
-for variables whose prefixes match the given ones and automatically
-add them as attributes to the class. You can then use them like
-
-```shell
->>>> class Environment: pass
->>>> environment = environment_variables(Environment, prefixes=['TERM'])
->>>> environment.TERM
-'screen-256color'
->>>> environment.TERM_PROGRAM
-'tmux'
-```
-
 It is also possible to annotate a class attribute with any class
 using the `variables` function:
 
@@ -76,14 +58,13 @@ from environment_variables import environment_variables, variable
 class Environment:
     MY_VARIABLE: CustomClass = variable(
         CustomClass,
-        'argument',
-        keyword='other_arguent'
+        default='some default value',
+        default_factory=custom_class_factory,
+        args=(1, 2, 3,),
+        kwargs={'more_custom': True},
     )
 ```
 
-The environment variable is then used as the first argument to the class
-constructor, followed by any args and kwargs passed to the variable
-function.
 
 
 ## The problem this is trying to solve
@@ -138,4 +119,3 @@ the string name of the variable again.
 On top of that, `os.getenv` always returns strings, so we would have to
 take care of the type casting ourselves if we want to have server ports
 as integers or feature flags as booleans.
-
