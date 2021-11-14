@@ -6,6 +6,7 @@ import typing
 @dataclasses.dataclass(frozen=True)
 class _VariableTemplate:
     class_or_type: typing.Union[typing.Callable, type]
+    default: str = None
     args: tuple = None
     kwargs: dict = None
 
@@ -33,6 +34,7 @@ class Variable:
         self._value = None
         self._args = None
         self._kwargs = None
+        self._template_default = None
 
         if isinstance(self.default, _VariableTemplate):
             if self._type is not None and self._type != self.default.class_or_type:
@@ -44,6 +46,7 @@ class Variable:
             self._args = self.default.args
             self._kwargs = self.default.kwargs
             self._type = self.default.class_or_type
+            self._template_default = self.default.default
             self.default = None
 
         if self.default is not None and type(self.default) != self._type:
@@ -67,7 +70,8 @@ class Variable:
         if self._value:
             return self._value
 
-        raw_value = os.getenv(self.key, default=self.default)
+        default = self.default if self.default is not None else self._template_default
+        raw_value = os.getenv(self.key, default=default)
 
         if raw_value is None:
             raise AttributeError(
@@ -117,7 +121,7 @@ class Variable:
         return self._type
 
 
-def variable(class_or_type, args=None, kwargs=None):
+def variable(class_or_type, default=None, args=None, kwargs=None):
     """Create an attribute that is of a class or type that has more
     arguments than one, and pass the extra arguments to its initializer.
 
@@ -126,6 +130,8 @@ def variable(class_or_type, args=None, kwargs=None):
     any additional :args: and :kwargs:
 
     :param class_or_type: class or type of this attribute
+    :param default: default string value to be passed to the class
+    constructor of `class_or_type`
     :param args: additional arguments that will be passed directly to
     the :class_or_type: constructor
     :param kwargs: additional keyword arguments that wil be passed
@@ -134,4 +140,9 @@ def variable(class_or_type, args=None, kwargs=None):
     args = args or tuple()
     kwargs = kwargs or dict()
 
-    return _VariableTemplate(class_or_type, args, kwargs)
+    return _VariableTemplate(
+        class_or_type,
+        default=default,
+        args=args,
+        kwargs=kwargs
+    )
