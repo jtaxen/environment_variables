@@ -58,6 +58,17 @@ class AttributeWithPositionalArgument:
         }
     )
 
+@environment_variables
+class AttributeWithDefaultForEnvVar:
+    DOES_NOT_EXIST = variable(
+        CustomFieldsClass,
+        default='my-default',
+        args=('no-default',),
+        kwargs={
+            'with_default': 'not-default'
+        }
+    )
+
 
 
 def test_if_type_is_class_then_variable_is_used_to_init_the_class():
@@ -101,3 +112,10 @@ def test_annotation_must_match_variable_class():
     with pytest.raises(ValueError):
         # When
         environment_variables(ConflictingAnnotations)
+
+
+def test_default_value_is_passed_to_class_constructor():
+    assert isinstance(AttributeWithDefaultForEnvVar.DOES_NOT_EXIST, CustomFieldsClass)
+    assert 'my-default' == AttributeWithDefaultForEnvVar.DOES_NOT_EXIST.name
+    assert 'no-default' == AttributeWithDefaultForEnvVar.DOES_NOT_EXIST.without_default
+    assert 'not-default' == AttributeWithDefaultForEnvVar.DOES_NOT_EXIST.with_default
