@@ -112,16 +112,16 @@ class EnvVars(metaclass=EnvVarMeta):
     pass
 
 
-def environment_variables(cls=None, *, validate=False, prefixes=None):
+def environment_variables(cls=None, *, validate=False, collect_prefixes=None):
     """
     :param cls: Class to cast to EnvVars class
     :param validate: if True, run through all environment variables
     and raise an error if any variable is not set nor have a default
-    :param prefixes: if a list of prefixes is provided, the class
+    :param collect_prefixes: if a list of prefixes is provided, the class
     will automatically add environment variables with those prefixes
     """
-    if prefixes is None:
-        prefixes = []
+    if collect_prefixes is None:
+        collect_prefixes = []
 
     def wrap(old_cls):
         name = str(old_cls.__name__)
@@ -130,7 +130,7 @@ def environment_variables(cls=None, *, validate=False, prefixes=None):
 
         new_cls = EnvVarMeta(name, bases, class_dict)
 
-        for prefix in prefixes:
+        for prefix in collect_prefixes:
             new_cls.add_variables_by_prefix(prefix)
 
         if validate:

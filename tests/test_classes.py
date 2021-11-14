@@ -107,7 +107,7 @@ def test_can_not_cast_variable_if_type_is_not_matching():
 
 
 def test_if_prefix_is_specified_the_class_finds_all_matching_variables():
-    @environment_variables(prefixes=['DEFINED'])
+    @environment_variables(collect_prefixes=['DEFINED'])
     class AutomaticEnvironment:
         DEFINED_FLOAT_VALUE: float
         DEFINED_INTEGER_VALUE: int
