@@ -93,7 +93,7 @@ def test_default_with_missing_annotation_returns_correct_env_var_if_defined():
     assert isinstance(env_class.BOOLEAN_FALSE, bool)
     assert not env_class.BOOLEAN_FALSE
     assert isinstance(env_class.STRING_VALUE, str)
-    assert '/path/to/some/place' == env_class.STRING_VALUE
+    assert 'string value' == env_class.STRING_VALUE
     assert isinstance(env_class.FLOAT_VALUE, float)
     assert 10.001 == env_class.FLOAT_VALUE
     assert isinstance(env_class.INTEGER_VALUE, int)

@@ -7,6 +7,7 @@ import typing
 class _VariableTemplate:
     class_or_type: typing.Union[typing.Callable, type]
     default: str = None
+    default_factory: typing.Callable = None
     args: tuple = None
     kwargs: dict = None
 
@@ -35,6 +36,7 @@ class Variable:
         self._args = None
         self._kwargs = None
         self._template_default = None
+        self._default_factory = None
 
         if isinstance(self.default, _VariableTemplate):
             if self._type is not None and self._type != self.default.class_or_type:
@@ -47,6 +49,7 @@ class Variable:
             self._kwargs = self.default.kwargs
             self._type = self.default.class_or_type
             self._template_default = self.default.default
+            self._default_factory = self.default.default_factory
             self.default = None
 
         if self.default is not None and type(self.default) != self._type:
@@ -78,6 +81,9 @@ class Variable:
                 f"The environment variable '{self.key}' is not set and no default "
                 "has been provided"
             )
+
+        if self._default_factory:
+            return self._default_factory(raw_value)
 
         if self._args or self._kwargs:
             return self.type(raw_value, *self._args, **self._kwargs)
@@ -121,7 +127,7 @@ class Variable:
         return self._type
 
 
-def variable(class_or_type, default=None, args=None, kwargs=None):
+def variable(class_or_type, default=None, default_factory=None, args=None, kwargs=None):
     """Create an attribute that is of a class or type that has more
     arguments than one, and pass the extra arguments to its initializer.
 
@@ -143,6 +149,7 @@ def variable(class_or_type, default=None, args=None, kwargs=None):
     return _VariableTemplate(
         class_or_type,
         default=default,
+        default_factory=default_factory,
         args=args,
         kwargs=kwargs
     )
