@@ -1,6 +1,11 @@
 import os
 
 from .variables import Variable, _VariableTemplate
+from .exceptions import (
+    EnvironmentValidationError,
+    EnvironmentVariableNotSetError,
+    EnvironmentVariableTypeError,
+)
 
 
 def _validate_environment_variables(cls):
@@ -18,19 +23,19 @@ def _validate_environment_variables(cls):
         if isinstance(attribute, Variable):
             try:
                 _ = attribute.value
-            except AttributeError:
+            except EnvironmentVariableNotSetError:
                 message += (
                     f"Environment variable '{name}' has not been set and "
                     "has no default value\n"
                 )
-            except ValueError:
+            except EnvironmentVariableTypeError:
                 message += (
                     f"Environment variable '{name}' can not be cast to "
                     f"type '{attribute.type}'\n"
                 )
 
     if message:
-        raise ValueError(message)
+        raise EnvironmentValidationError(message)
 
 
 def _add_variables_by_prefix(cls, prefix):

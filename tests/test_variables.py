@@ -4,6 +4,10 @@ import itertools
 import pytest
 
 from src.environment_variables.variables import Variable, _VariableTemplate
+from src.environment_variables.exceptions import (
+    EnvironmentVariableNotSetError,
+    EnvironmentVariableTypeError,
+)
 
 
 def test_variable_without_default_returns_value(environment_variables):
@@ -47,9 +51,9 @@ def test_variable_without_default_raises_error_if_env_var_is_undefined():
     variable = Variable(key='DOES_NOT_EXIST', type_=str)
 
     # Then
-    with pytest.raises(AttributeError):
+    with pytest.raises(EnvironmentVariableNotSetError):
         # When
-        value = variable.value
+        _ = variable.value
 
 
 @pytest.mark.parametrize(
@@ -62,11 +66,11 @@ def test_variable_default_must_match_given_type_annotation(default, variable_typ
     if type(default) == variable_type:
         try:
             _ = Variable('SOME_KEY', type_=variable_type, default=default)
-        except ValueError:
+        except EnvironmentVariableTypeError:
             pytest.fail()
 
     else:
-        with pytest.raises(ValueError):
+        with pytest.raises(EnvironmentVariableTypeError):
             _ = Variable('SOME_KEY', type_=variable_type, default=default)
 
 
@@ -89,15 +93,14 @@ def test_if_attribute_is_defined_as_variable_template_then_variable_type_matches
 
 
 @pytest.mark.parametrize(
-    'boolean_representation',
-    ['truth', 'YES', 'falsely', 'NO', '2', '-1', '0.0']
+    'boolean_representation', ['truth', 'YES', 'falsely', 'NO', '2', '-1', '0.0']
 )
-def test_casting_non_boolean_value_to_boolean_raises_value_error(boolean_representation):
+def test_casting_non_boolean_value_to_boolean_raises_error(boolean_representation):
     # Given
     os.environ['SOME_KEY'] = boolean_representation
     variable = Variable('SOME_KEY', type_=bool)
 
     # Then
-    with pytest.raises(ValueError):
+    with pytest.raises(EnvironmentVariableTypeError):
         # When
         _ = variable.value

@@ -1,6 +1,10 @@
 import pytest
 
 from src.environment_variables import EnvVarMeta, EnvVars, environment_variables
+from src.environment_variables.exceptions import (
+    EnvironmentValidationError,
+    EnvironmentVariableTypeError,
+)
 
 
 class EnvironmentWithMeta(metaclass=EnvVarMeta):
@@ -102,7 +106,7 @@ def test_can_not_cast_variable_if_type_is_not_matching():
         STRING_VALUE: int
 
     env_class = environment_variables(TypeMismatch)
-    with pytest.raises(ValueError):
+    with pytest.raises(EnvironmentVariableTypeError):
         _ = env_class.STRING_VALUE
 
 
@@ -121,6 +125,7 @@ def test_if_prefix_is_specified_the_class_finds_all_matching_variables():
 
 def test_validate_environment_variables_raises_no_errors_if_all_is_valid():
     try:
+
         @environment_variables(validate=True)
         class ValidateEnvironment:
             BOOLEAN_TRUE: bool
@@ -129,19 +134,21 @@ def test_validate_environment_variables_raises_no_errors_if_all_is_valid():
             FLOAT_VALUE: float
             DOES_NOT_EXIST: str = 'default'
 
-    except ValueError:
+    except EnvironmentValidationError:
         pytest.fail()
 
 
 def test_validate_environment_raises_error_if_environment_variable_is_not_defined():
-    with pytest.raises(ValueError):
+    with pytest.raises(EnvironmentValidationError):
+
         @environment_variables(validate=True)
         class ValidateEnvironment:
             DOES_NOT_EXIST: bool
 
 
 def test_validate_environment_raises_error_if_env_var_can_not_be_cast():
-    with pytest.raises(ValueError):
+    with pytest.raises(EnvironmentValidationError):
+
         @environment_variables(validate=True)
         class ValidateEnvironment:
             STRING_VALUE: float

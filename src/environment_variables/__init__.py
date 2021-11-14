@@ -27,5 +27,5 @@ instead.
 If an environment variable is not set, and the class attribute does not
 have a default value, then an `EnvironmentVariableError` will be raised.
 """
-from .classes import EnvVarMeta, EnvVars, environment_variables
-from .variables import variable
+from .classes import EnvVarMeta, EnvVars, environment_variables  # noqa: F401
+from .variables import variable  # noqa: F401

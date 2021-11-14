@@ -3,6 +3,7 @@ import pathlib
 import pytest
 
 from src.environment_variables import environment_variables, variable
+from src.environment_variables.exceptions import EnvironmentVariableTypeError
 
 
 @dataclasses.dataclass
@@ -33,30 +34,25 @@ class AttributeWithoutDefault:
 @environment_variables
 class AttributeWithDefault:
     STRING_VALUE: CustomFieldsClass = variable(
-        CustomFieldsClass, kwargs={
-            'without_default': 'no-default', 'with_default': 'not-default'
-        }
+        CustomFieldsClass,
+        kwargs={'without_default': 'no-default', 'with_default': 'not-default'},
     )
 
 
 @environment_variables
 class AttributeWithDefaultNoAnnotation:
     STRING_VALUE = variable(
-        CustomFieldsClass, kwargs={
-            'without_default':'no-default', 'with_default': 'not-default'
-        }
+        CustomFieldsClass,
+        kwargs={'without_default': 'no-default', 'with_default': 'not-default'},
     )
 
 
 @environment_variables
 class AttributeWithPositionalArgument:
     STRING_VALUE = variable(
-        CustomFieldsClass,
-        args=('no-default',),
-        kwargs={
-            'with_default': 'not-default'
-        }
+        CustomFieldsClass, args=('no-default',), kwargs={'with_default': 'not-default'}
     )
+
 
 @environment_variables
 class AttributeWithDefaultForEnvVar:
@@ -64,17 +60,13 @@ class AttributeWithDefaultForEnvVar:
         CustomFieldsClass,
         default='my-default',
         args=('no-default',),
-        kwargs={
-            'with_default': 'not-default'
-        }
+        kwargs={'with_default': 'not-default'},
     )
 
 
 def custom_fields_class_factory(argument):
     return CustomFieldsClass(
-        name='static name',
-        without_default=argument,
-        with_default='default'
+        name='static name', without_default=argument, with_default='default'
     )
 
 
@@ -115,7 +107,7 @@ def test_cast_variable_to_custom_class_without_defaults():
         AttributeWithDefault,
         AttributeWithDefaultNoAnnotation,
         AttributeWithPositionalArgument,
-    ]
+    ],
 )
 def test_cast_variable_to_custom_class_with_defaults(env_var_class):
     assert isinstance(env_var_class.STRING_VALUE, CustomFieldsClass)
@@ -127,13 +119,12 @@ def test_annotation_must_match_variable_class():
     # Given
     class ConflictingAnnotations:
         STRING_VALUE: BadFieldsClass = variable(
-            CustomFieldsClass, kwargs={
-                'without_default': 'no-default', 'with_default': 'not-default'
-            }
+            CustomFieldsClass,
+            kwargs={'without_default': 'no-default', 'with_default': 'not-default'},
         )
 
     # Then
-    with pytest.raises(ValueError):
+    with pytest.raises(EnvironmentVariableTypeError):
         # When
         environment_variables(ConflictingAnnotations)
 
@@ -153,7 +144,9 @@ def test_default_factory_returns_instance_with_environment_argument_if_set():
 
 
 def test_default_factory_uses_default_value_if_environment_variable_is_not_set():
-    assert isinstance(DefaultFactoryWithoutSetVariable.DOES_NOT_EXIST, CustomFieldsClass)
+    assert isinstance(
+        DefaultFactoryWithoutSetVariable.DOES_NOT_EXIST, CustomFieldsClass
+    )
     assert 'static name' == DefaultFactoryWithoutSetVariable.DOES_NOT_EXIST.name
     assert 'default' == DefaultFactoryWithoutSetVariable.DOES_NOT_EXIST.without_default
     assert 'default' == DefaultFactoryWithoutSetVariable.DOES_NOT_EXIST.with_default

@@ -2,6 +2,8 @@ import dataclasses
 import os
 import typing
 
+from .exceptions import EnvironmentVariableNotSetError, EnvironmentVariableTypeError
+
 
 @dataclasses.dataclass(frozen=True)
 class _VariableTemplate:
@@ -20,14 +22,12 @@ class Variable:
         default: typing.Optional[typing.Any] = None,
     ):
         """Representation of an environment variable.
-        @param key: Name of the environment variable.
-        @param type: Type to cast the environment variable to
-        after loading its value.
-        @param default: Optional default of the value, if it
-        is not defined on the system. If a default
-        is not set, and the environment variable is
-        not defined on the system, an AttributeError
-        is raised when trying to access the variable.
+
+        :param key: Name of the environment variable.
+        :param type: Type to cast the environment variable to after
+        loading its value.
+        :param default: Optional default of the value, if it is not
+        defined on the system.
         """
         self.key = key
         self._type = type_
@@ -40,7 +40,7 @@ class Variable:
 
         if isinstance(self.default, _VariableTemplate):
             if self._type is not None and self._type != self.default.class_or_type:
-                raise ValueError(
+                raise EnvironmentVariableTypeError(
                     f"The default value '{self.default.class_or_type}' is not of type '"
                     f"{self._type}'"
                 )
@@ -53,7 +53,7 @@ class Variable:
             self.default = None
 
         if self.default is not None and type(self.default) != self._type:
-            raise ValueError(
+            raise EnvironmentVariableTypeError(
                 f"The default value '{self.default}' is not of type '{self._type}'"
             )
 
@@ -64,10 +64,10 @@ class Variable:
         :return: The value of the environment variable, cast
         to the desired type, or, if the environment variable
         is not defined, return the default value
-        :raises AttributeError: if the environment variable
+        :raises EnvironmentVariableNotSetError: if the environment variable
         is not set and there is no default value to fall
         back on
-        :raises ValueError: if the environment variable
+        :raises EnvironmentVariableTypeError: if the environment variable
         cannot be cast to the desired type
         """
         if self._value:
@@ -77,7 +77,7 @@ class Variable:
         raw_value = os.getenv(self.key, default=default)
 
         if raw_value is None:
-            raise AttributeError(
+            raise EnvironmentVariableNotSetError(
                 f"The environment variable '{self.key}' is not set and no default "
                 "has been provided"
             )
@@ -100,7 +100,7 @@ class Variable:
                 return bool(int(raw_value))
 
             if raw_value.lower() not in ['true', 'false']:
-                raise ValueError(
+                raise EnvironmentVariableTypeError(
                     f"The value '{raw_value}' can not be cast to 'boolean'"
                 )
 
@@ -112,7 +112,7 @@ class Variable:
         try:
             self._value = self.type(raw_value)
         except ValueError as error:
-            raise ValueError(
+            raise EnvironmentVariableTypeError(
                 f"Error reading environment variable '{self.key}': cannot cast"
                 f"value '{raw_value}' to type '{self._type}'"
             ) from error
@@ -151,5 +151,5 @@ def variable(class_or_type, default=None, default_factory=None, args=None, kwarg
         default=default,
         default_factory=default_factory,
         args=args,
-        kwargs=kwargs
+        kwargs=kwargs,
     )
